@@ -1,5 +1,6 @@
 import requests
 import urllib.request
+import progressbar
 from bs4 import BeautifulSoup
 
 
@@ -20,9 +21,11 @@ def download_images():
         img_els = table.find_all("img")
         images = images + [img.attrs["src"] for img in img_els]
 
-    for img in images:
-        urllib.request.urlretrieve(
-            f"https:{ img }", f"res/{ img[img.rindex('/') + 1:] }")
+    with progressbar.ProgressBar(max_value=len(images)) as bar:
+        for i, img in enumerate(images):
+            urllib.request.urlretrieve(
+                f"https:{ img }", f"res/real/{ img[img.rindex('/') + 1:] }")
+            bar.update(i)
 
 
 if __name__ == "__main__":
