@@ -2,9 +2,12 @@ import requests
 import urllib.request
 import progressbar
 from bs4 import BeautifulSoup
+from PIL import Image
+from os import listdir
+from os.path import isfile, join
 
 
-def download_images():
+def download_images(outdir):
     res = requests.get(
         "https://en.wikipedia.org/wiki/List_of_works_by_Vincent_van_Gogh")
 
@@ -23,10 +26,26 @@ def download_images():
 
     with progressbar.ProgressBar(max_value=len(images)) as bar:
         for i, img in enumerate(images):
+            name = img[img.rindex('/') + 1:]
+            name = name.replace("%", "_")
             urllib.request.urlretrieve(
-                f"https:{ img }", f"res/real/{ img[img.rindex('/') + 1:] }")
+                f"https:{ img }", f"{ outdir }/{ name }")
+            bar.update(i)
+
+
+def normalize_images(indir, shape):
+    images = listdir(indir)
+    with progressbar.ProgressBar(max_value=len(images)) as bar:
+        for i, url in enumerate(images):
+            image = Image.open(join(indir, url))
+            image = image.resize(shape)
+            image.save(join(indir, url))
             bar.update(i)
 
 
 if __name__ == "__main__":
-    download_images()
+    print("Downloading images...")
+    download_images("res")
+
+    print("Normalizing images...")
+    normalize_images("res", (150, 150))
