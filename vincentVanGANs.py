@@ -1,9 +1,12 @@
 import tensorflow as tf
+from tensorflow import keras
+from os import listdir
+import generator as gen
+import discriminator as discrim
 
 
-def generator():
-    pass
+if __name__ == "__main__":
+    INPUT_SIZE = 100
 
-
-def discriminator():
-    pass
+    generator = gen.model(INPUT_SIZE)
+    discriminator = discrim.model(INPUT_SIZE)

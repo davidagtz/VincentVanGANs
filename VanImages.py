@@ -33,7 +33,7 @@ def download_images(outdir):
             bar.update(i)
 
 
-def normalize_images(indir, shape):
+def resize_images(indir, shape):
     images = listdir(indir)
     with progressbar.ProgressBar(max_value=len(images)) as bar:
         for i, url in enumerate(images):
@@ -47,5 +47,5 @@ if __name__ == "__main__":
     print("Downloading images...")
     download_images("res")
 
-    print("Normalizing images...")
-    normalize_images("res", (150, 150))
+    print("Resizing images...")
+    resize_images("res", (150, 150))
