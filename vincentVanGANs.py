@@ -136,6 +136,8 @@ def train(img_list, epochs):
         gen_loss_list = []
         dis_loss_list = []
 
+        print(data)
+
         for batch in img_list:
             res = step(batch)
             gen_loss_list.append(res[0])
