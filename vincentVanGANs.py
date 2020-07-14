@@ -44,19 +44,26 @@ if args.refresh != None:
     if shape[0] / 32. % 1 != 0:
         raise Exception("Edges not multiples of 32")
     INPUT_SHAPE = shape
-    refresh_dir(INDIR, (shape[0], shape[0]))
+    refresh_dir(INDIR, (shape[0], shape[1]))
 
 # Get Data
 data = []
 for url in IMAGE_URLS:
     image = Image.open(join(INDIR, url))
+    t = np.asarray(image)
+    if t.shape != INPUT_SHAPE:
+        print(t.shape)
+        print(url)
+        continue
     data.append(np.asarray(image))
+
 # Reshapes data to be (data_size, img, img, channel)
 # -1 is adapative
-data = np.reshape(data, (-1, INPUT_SHAPE[0], INPUT_SHAPE[0], 3))
+data = np.reshape(data, (-1, INPUT_SHAPE[0], INPUT_SHAPE[1], INPUT_SHAPE[2]))
 # Pixel values from -1 to 1
 data = data.astype(np.float32)
 data = data / 127.5 - 1
+dataset = tf.data.Dataset.from_tensor_slices(data).shuffle(len(data)).batch(BATCH)
 
 # Make models
 generator = gen.model(INPUT_SHAPE, SEED)
@@ -74,7 +81,7 @@ MARGIN = INPUT_SHAPE[0] // 10
 def save_step(name, noise):
     width = MARGIN + IMAGE_COLS * (MARGIN + INPUT_SHAPE[0])
     height = MARGIN + IMAGE_ROWS * (MARGIN + INPUT_SHAPE[1])
-    images = np.full((width, height, INPUT_SHAPE[2]), 255, dtype=np.uint8)
+    images = np.full((height, width, INPUT_SHAPE[2]), 255, dtype=np.uint8)
 
     imgs = generator.predict(noise)
     imgs = 0.5 * imgs + 0.5
@@ -136,8 +143,6 @@ def train(img_list, epochs):
         gen_loss_list = []
         dis_loss_list = []
 
-        print(data)
-
         for batch in img_list:
             res = step(batch)
             gen_loss_list.append(res[0])
@@ -156,6 +161,6 @@ def train(img_list, epochs):
     print(f"\nTraining time: {time_string(ELAPSED)}")
 
 
-train(data, EPOCHS)
+train(dataset, EPOCHS)
 generator.save(join(OUTDIR, "generator.model"))
 discriminator.save(join(OUTDIR, "discriminator.model"))
