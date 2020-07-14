@@ -30,7 +30,7 @@ args = parser.parse_args()
 # Main Config
 INDIR = "assets/res"
 OUTDIR = "assets/output"
-EPOCHS = 25
+EPOCHS = 50
 IMAGE_URLS = listdir(INDIR)
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = TRAINING_SIZE // 32
@@ -63,15 +63,16 @@ data = np.reshape(data, (-1, INPUT_SHAPE[0], INPUT_SHAPE[1], INPUT_SHAPE[2]))
 # Pixel values from -1 to 1
 data = data.astype(np.float32)
 data = data / 127.5 - 1
-dataset = tf.data.Dataset.from_tensor_slices(data).shuffle(len(data)).batch(BATCH)
+dataset = tf.data.Dataset.from_tensor_slices(
+    data).shuffle(len(data)).batch(BATCH)
 
 # Make models
 generator = gen.model(INPUT_SHAPE, SEED)
 discriminator = dis.model(INPUT_SHAPE)
 
 # The optimizers that will adjust the models
-gen_optimizer = keras.optimizers.Adam(1.3e-4, .48)
-dis_optimizer = keras.optimizers.Adam(1.3e-4, .48)
+gen_optimizer = keras.optimizers.Adam(1.5e-4, .5)
+dis_optimizer = keras.optimizers.Adam(1.5e-4, .5)
 
 IMAGE_COLS = 4
 IMAGE_ROWS = 2
