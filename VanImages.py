@@ -3,7 +3,7 @@ import urllib.request
 import progressbar
 from bs4 import BeautifulSoup
 from PIL import Image
-from os import listdir
+from os import listdir, remove
 from os.path import isfile, join
 
 
@@ -26,10 +26,9 @@ def download_images(outdir):
 
     with progressbar.ProgressBar(max_value=len(images)) as bar:
         for i, img in enumerate(images):
-            name = img[img.rindex('/') + 1:]
-            name = name.replace("%", "_")
+            ext = img[img.rindex('.') + 1:]
             urllib.request.urlretrieve(
-                f"https:{ img }", f"{ outdir }/{ name }")
+                f"https:{ img }", f"{ outdir }/{ i }.{ ext }")
             bar.update(i)
 
 
@@ -43,9 +42,20 @@ def resize_images(indir, shape):
             bar.update(i)
 
 
-if __name__ == "__main__":
+def refresh_dir(dir, shape):
+    if dir.strip() == "":
+        raise Exception("No directory given")
+
+    urls = listdir(dir)
+    for url in urls:
+        remove(join(dir, url))
+
     print("Downloading images...")
-    download_images("res")
+    download_images(dir)
 
     print("Resizing images...")
-    resize_images("res", (150, 150))
+    resize_images(dir, shape)
+
+
+if __name__ == "__main__":
+    refresh_dir("res", (256, 256))
