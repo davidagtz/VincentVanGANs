@@ -1,1 +1,2 @@
-res/
+res/*
+__pycache__/

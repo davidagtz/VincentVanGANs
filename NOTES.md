@@ -1,4 +1,4 @@
-# What different things do
+# Deep Learning Notes
 
 ## Batch Normalization
 
@@ -12,7 +12,6 @@
 -   max(0, x)
 -   This is better than sigmoid/tanh because it does not diminish values that are either small or large.
 -   Variants
-
     -   Leaky ReLU - Piecewise function. < 0 => alpha \* x. >= 0, x. This helps prevent zeroing out of small values.
 
 ## CrossEntropy Loss

@@ -13,24 +13,24 @@ def loss(fake):
 def model(size):
     model = Sequential()
 
-    model.add(Dense(4*4*256, activation="relu", input_dim=size))
+    model.add(Dense(2*2*256, activation="relu", input_dim=size))
     # Unflatten Layer
-    model.add(Reshape(4, 4, 256))
+    model.add(Reshape((2, 2, 256)))
 
     # First convolutional layer
-    model.add(UpSampling2D())
+    model.add(UpSampling2D(size=(3, 3)))
     model.add(Conv2D(256, kernel_size=3, padding="same"))
     model.add(BatchNormalization(momentum=0.8))
     model.add(Activation("relu"))
 
     # Second convolutional layer
-    model.add(UpSampling2D())
+    model.add(UpSampling2D(size=(5, 5)))
     model.add(Conv2D(256, kernel_size=3, padding="same"))
     model.add(BatchNormalization(momentum=0.8))
     model.add(Activation("relu"))
 
     # Third convolutional layer
-    model.add(UpSampling2D())
+    model.add(UpSampling2D(size=(5, 5)))
     model.add(Conv2D(128, kernel_size=3, padding="same"))
     model.add(BatchNormalization(momentum=0.8))
     model.add(Activation("relu"))
