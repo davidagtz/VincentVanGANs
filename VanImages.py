@@ -58,4 +58,4 @@ def refresh_dir(dir, shape):
 
 
 if __name__ == "__main__":
-    refresh_dir("res", (256, 256))
+    refresh_dir("assets/res", (256, 256))
