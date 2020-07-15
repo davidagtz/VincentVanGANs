@@ -115,7 +115,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Downloads and resizes images")
 
     parser.add_argument("--separate", action="store_true")
-    parser.add_argument("--size", required=True)
+    parser.add_argument("--size", required=True, type=int)
     parser.add_argument("--out", default="assets/res")
 
     args = parser.parse_args()

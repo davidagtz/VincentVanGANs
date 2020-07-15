@@ -47,7 +47,7 @@ if args.refresh != None:
         raise Exception("Edges not multiples of 32")
     INPUT_SHAPE = shape
     for url in INDIRS:
-        refresh_dir(url, (shape[0], shape[1]))
+        refresh_dir(url, (shape[0], shape[1]), separate=True)
 
 for url in INDIRS:
     IMAGE_URLS += [join(url, file) for file in listdir(url)]
