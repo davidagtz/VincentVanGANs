@@ -2,6 +2,7 @@ from tensorflow import ones_like, zeros_like, keras
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Reshape, BatchNormalization
 from tensorflow.keras.layers import Conv2D, UpSampling2D, Activation
+from math import log
 
 cross_entropy = keras.losses.BinaryCrossentropy(from_logits=True)
 
@@ -39,7 +40,15 @@ def model(shape, size):
 
     # Scaled CNN Layer
     if MULTIPLE > 1:
-        model.add(UpSampling2D(size=(MULTIPLE, MULTIPLE)))
+        quotient = MULTIPLE
+        while log(quotient, 2) % 1 != 0:
+            model.add(UpSampling2D())
+            model.add(Conv2D(128, kernel_size=3, padding="same"))
+            model.add(BatchNormalization(momentum=0.8))
+            model.add(Activation("relu"))
+            quotient /= 2
+
+        model.add(UpSampling2D(size=(quotient, quotient)))
         model.add(Conv2D(128, kernel_size=3, padding="same"))
         model.add(BatchNormalization(momentum=0.8))
         model.add(Activation("relu"))
