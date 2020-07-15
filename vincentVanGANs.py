@@ -41,10 +41,6 @@ SEED = 100
 # Width * Height * Channels
 INPUT_SHAPE = (128, 128, 3)
 
-for url in INDIRS:
-    IMAGE_URLS += [join(url, file) for file in listdir(url)]
-
-
 if args.refresh != None:
     shape = (args.refresh[0], args.refresh[0], 3)
     if shape[0] / 32. % 1 != 0:
@@ -52,6 +48,9 @@ if args.refresh != None:
     INPUT_SHAPE = shape
     for url in INDIRS:
         refresh_dir(url, (shape[0], shape[1]))
+
+for url in INDIRS:
+    IMAGE_URLS += [join(url, file) for file in listdir(url)]
 
 # Get Data
 data = []
