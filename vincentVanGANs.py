@@ -24,32 +24,39 @@ def time_string(seconds):
 
 parser = ArgumentParser(
     description="Makes and trains GANs for painting generation")
-parser.add_argument("--refresh", nargs=1)
+parser.add_argument("--refresh", nargs=1, type=int)
+parser.add_argument("indirs", nargs="+")
+parser.add_argument("--outdir", nargs=1, default="assets/output")
 args = parser.parse_args()
 
 # Main Config
-INDIR = "assets/res"
-OUTDIR = "assets/output"
+INDIRS = args.indirs
+OUTDIR = args.outdir
 EPOCHS = 50
-IMAGE_URLS = listdir(INDIR)
+IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
-BATCH = TRAINING_SIZE // 32
+BATCH = max(1, TRAINING_SIZE // 32)
 
 SEED = 100
 # Width * Height * Channels
 INPUT_SHAPE = (128, 128, 3)
 
+for url in INDIRS:
+    IMAGE_URLS += [join(url, file) for file in listdir(url)]
+
+
 if args.refresh != None:
-    shape = (int(args.refresh[0]), int(args.refresh[0]), 3)
+    shape = (args.refresh[0], args.refresh[0], 3)
     if shape[0] / 32. % 1 != 0:
         raise Exception("Edges not multiples of 32")
     INPUT_SHAPE = shape
-    refresh_dir(INDIR, (shape[0], shape[1]))
+    for url in INDIRS:
+        refresh_dir(url, (shape[0], shape[1]))
 
 # Get Data
 data = []
 for url in IMAGE_URLS:
-    image = Image.open(join(INDIR, url))
+    image = Image.open(url)
     t = np.asarray(image)
     if t.shape != INPUT_SHAPE:
         print(t.shape)
@@ -71,8 +78,10 @@ generator = gen.model(INPUT_SHAPE, SEED)
 discriminator = dis.model(INPUT_SHAPE)
 
 # The optimizers that will adjust the models
-gen_optimizer = keras.optimizers.Adam(1.5e-4, .5)
-dis_optimizer = keras.optimizers.Adam(1.5e-4, .5)
+alpha = 1e-6
+beta = 5e-2
+gen_optimizer = keras.optimizers.Adam(alpha, beta)
+dis_optimizer = keras.optimizers.Adam(alpha, beta)
 
 IMAGE_COLS = 4
 IMAGE_ROWS = 2

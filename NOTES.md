@@ -30,3 +30,9 @@
     -   Randomly selects nodes to not be trained on
     -   Helps with generalization
     -   One parameter that detemines frequency of dropout
+
+## Problems I have encountered
+
+-   Convergence on high loss
+    -   probably too high of learning rates
+    -   probably due to vanishing or exploding gradient
