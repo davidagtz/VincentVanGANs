@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 from tensorflow import keras, GradientTape
 from os import listdir
-from os.path import join
+from os.path import join, exists
 from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
@@ -34,8 +34,8 @@ args = parser.parse_args()
 
 # Main Config
 INDIRS = args.indirs
-OUTDIR = args.outdir
-EPOCHS = args.epochs
+OUTDIR = args.outdir[0]
+EPOCHS = args.epochs[0]
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = max(1, TRAINING_SIZE // 32)
@@ -78,6 +78,7 @@ dataset = tf.data.Dataset.from_tensor_slices(
 generator = None
 discriminator = None
 if args.load:
+    print(OUTDIR)
     generator = tf.keras.models.load_model(join(OUTDIR, "generator.model"))
     discriminator = tf.keras.models.load_model(
         join(OUTDIR, "discriminator.model"))
@@ -156,7 +157,7 @@ def train(img_list, epochs):
     TRAIN_START = time.time()
     EX_SEED = np.random.normal(0, 1, (IMAGE_COLS * IMAGE_ROWS, SEED))
 
-    for epoch in range(args.startstep, args.startstep + epochs):
+    for epoch in range(args.startstep[0], args.startstep[0] + epochs):
         EPOCH_START = time.time()
 
         gen_loss_list = []
@@ -181,5 +182,13 @@ def train(img_list, epochs):
 
 
 train(dataset, EPOCHS)
-generator.save(join(OUTDIR, "generator.model"))
-discriminator.save(join(OUTDIR, "discriminator.model"))
+
+if args.load:
+    i = 0
+    while exists(join(OUTDIR, f"generator-{i}.model")):
+        i += 1
+    generator.save(join(OUTDIR, f"generator-{i}.model"))
+    discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
+else:
+    generator.save(join(OUTDIR, "generator.model"))
+    discriminator.save(join(OUTDIR, "discriminator.model"))
