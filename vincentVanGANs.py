@@ -27,12 +27,15 @@ parser = ArgumentParser(
 parser.add_argument("--refresh", nargs=1, type=int)
 parser.add_argument("indirs", nargs="+")
 parser.add_argument("--outdir", nargs=1, default="assets/output")
+parser.add_argument("--epochs", nargs=1, default=50, type=int)
+parser.add_argument("--startstep", nargs=1, default=0, type=int)
+parser.add_argument("--load", action="store_true")
 args = parser.parse_args()
 
 # Main Config
 INDIRS = args.indirs
 OUTDIR = args.outdir
-EPOCHS = 50
+EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = max(1, TRAINING_SIZE // 32)
@@ -72,9 +75,16 @@ data = data / 127.5 - 1
 dataset = tf.data.Dataset.from_tensor_slices(
     data).shuffle(len(data)).batch(BATCH)
 
-# Make models
-generator = gen.model(INPUT_SHAPE, SEED)
-discriminator = dis.model(INPUT_SHAPE)
+generator = None
+discriminator = None
+if args.load:
+    generator = tf.keras.models.load_model(join(OUTDIR, "generator.model"))
+    discriminator = tf.keras.models.load_model(
+        join(OUTDIR, "discriminator.model"))
+else:
+    # Make models
+    generator = gen.model(INPUT_SHAPE, SEED)
+    discriminator = dis.model(INPUT_SHAPE)
 
 # The optimizers that will adjust the models
 alpha = 1e-6
@@ -146,7 +156,7 @@ def train(img_list, epochs):
     TRAIN_START = time.time()
     EX_SEED = np.random.normal(0, 1, (IMAGE_COLS * IMAGE_ROWS, SEED))
 
-    for epoch in range(epochs):
+    for epoch in range(args.startstep, args.startstep + epochs):
         EPOCH_START = time.time()
 
         gen_loss_list = []
