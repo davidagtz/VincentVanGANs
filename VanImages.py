@@ -43,7 +43,7 @@ def download_images(outdir, separate=False):
         SIZE = len(images)
 
     with progressbar.ProgressBar(max_value=SIZE) as bar:
-        if separate:
+        if not separate:
             for i, img in enumerate(images):
                 ext = img[img.rindex('.') + 1:]
                 urllib.request.urlretrieve(
