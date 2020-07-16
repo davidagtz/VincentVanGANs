@@ -89,8 +89,10 @@ if args.load:
     discriminator = tf.keras.models.load_model(
         join(OUTDIR, "discriminator.model"))
 
-    steps = [x for x in listdir(OUTDIR) if isfile(x)]
-    STARTSTEP = int(steps[-1]) + 1
+    files = listdir(OUTDIR)
+    steps = [x for x in files if isfile(join(OUTDIR, x))]
+    STARTSTEP = int(len(steps))
+    print(STARTSTEP)
 else:
     # Make models
     generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=args.p)
