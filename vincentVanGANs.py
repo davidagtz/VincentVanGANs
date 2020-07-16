@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 from tensorflow import keras, GradientTape
 from os import listdir
-from os.path import join, exists
+from os.path import join, exists, isfile
 from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
@@ -19,17 +19,22 @@ def time_string(seconds):
     minutes = seconds // 60
     seconds = seconds % 60
 
-    return "{}:{:02}:{:>05.2f}".format(hours, minutes, seconds)
+    return "{}:{:02}:{:>05.2f}".format(int(hours), int(minutes), seconds)
 
 
 parser = ArgumentParser(
     description="Makes and trains GANs for painting generation")
-parser.add_argument("--refresh", nargs=1, type=int)
+parser.add_argument("--refresh", nargs=1, type=int,
+                    help="Redownload images and resize them to parameter")
 parser.add_argument("indirs", nargs="+")
 parser.add_argument("--outdir", nargs=1, default="assets/output")
 parser.add_argument("--epochs", nargs=1, default=50, type=int)
-parser.add_argument("--startstep", nargs=1, default=0, type=int)
-parser.add_argument("--load", action="store_true")
+parser.add_argument("--load", action="store_true",
+                    help="Load a model using the outdir")
+parser.add_argument("--p", default=.9, type=int,
+                    help="BatchNormalization Momentum")
+parser.add_argument("--optimizer", nargs=2,
+                    default=[1e-6, 5e-2], help="alpha and beta for optimizer")
 args = parser.parse_args()
 
 # Main Config
@@ -39,6 +44,7 @@ EPOCHS = args.epochs[0]
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = max(1, TRAINING_SIZE // 32)
+STARTSTEP = 0
 
 SEED = 100
 # Width * Height * Channels
@@ -78,18 +84,20 @@ dataset = tf.data.Dataset.from_tensor_slices(
 generator = None
 discriminator = None
 if args.load:
-    print(OUTDIR)
     generator = tf.keras.models.load_model(join(OUTDIR, "generator.model"))
     discriminator = tf.keras.models.load_model(
         join(OUTDIR, "discriminator.model"))
+
+    steps = [x for x in listdir(OUTDIR) if isfile(x)]
+    STARTSTEP = int(steps[-1]) + 1
 else:
     # Make models
-    generator = gen.model(INPUT_SHAPE, SEED)
-    discriminator = dis.model(INPUT_SHAPE)
+    generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=args.p)
+    discriminator = dis.model(INPUT_SHAPE, MOMENTUM=args.p)
 
 # The optimizers that will adjust the models
-alpha = 1e-6
-beta = 5e-2
+alpha = args.optimizer[0]
+beta = args.optimizer[1]
 gen_optimizer = keras.optimizers.Adam(alpha, beta)
 dis_optimizer = keras.optimizers.Adam(alpha, beta)
 
@@ -157,7 +165,7 @@ def train(img_list, epochs):
     TRAIN_START = time.time()
     EX_SEED = np.random.normal(0, 1, (IMAGE_COLS * IMAGE_ROWS, SEED))
 
-    for epoch in range(args.startstep[0], args.startstep[0] + epochs):
+    for epoch in range(STARTSTEP, STARTSTEP + epochs):
         EPOCH_START = time.time()
 
         gen_loss_list = []

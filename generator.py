@@ -11,7 +11,7 @@ def loss(fake):
     return cross_entropy(ones_like(fake), fake)
 
 
-def model(shape, size):
+def model(shape, size, MOMENTUM=.9):
     model = Sequential()
 
     MULTIPLE = shape[0] // 32
@@ -23,19 +23,19 @@ def model(shape, size):
     # First convolutional layer
     model.add(UpSampling2D())
     model.add(Conv2D(256, kernel_size=3, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(Activation("relu"))
 
     # Second convolutional layer
     model.add(UpSampling2D())
     model.add(Conv2D(256, kernel_size=3, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(Activation("relu"))
 
     # Third convolutional layer
     model.add(UpSampling2D())
     model.add(Conv2D(128, kernel_size=3, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(Activation("relu"))
 
     # Scaled CNN Layer
@@ -44,13 +44,13 @@ def model(shape, size):
         while log(quotient, 2) % 1 != 0:
             model.add(UpSampling2D())
             model.add(Conv2D(128, kernel_size=3, padding="same"))
-            model.add(BatchNormalization(momentum=0.8))
+            model.add(BatchNormalization(momentum=MOMENTUM))
             model.add(Activation("relu"))
             quotient /= 2
 
         model.add(UpSampling2D(size=(quotient, quotient)))
         model.add(Conv2D(128, kernel_size=3, padding="same"))
-        model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=MOMENTUM))
         model.add(Activation("relu"))
 
     # Final convolutional layer

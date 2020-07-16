@@ -13,7 +13,7 @@ def loss(real, fake):
     return rloss + floss
 
 
-def model(shape):
+def model(shape, MOMENTUM=.9):
     model = Sequential()
 
     # First CNN Layer
@@ -25,25 +25,25 @@ def model(shape):
     # model.add(Dropout(0.05))
     model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
     model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(LeakyReLU(alpha=.2))
 
     # Third CNN Layer
     # model.add(Dropout(0.05))
     model.add(Conv2D(128, kernel_size=3, strides=2, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(LeakyReLU(alpha=.2))
 
     # Fourth CNN Layer
     # model.add(Dropout(0.05))
     model.add(Conv2D(256, kernel_size=3, strides=1, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(LeakyReLU(alpha=.2))
 
     # Third CNN Layer
     # model.add(Dropout(0.05))
     model.add(Conv2D(512, kernel_size=3, strides=1, padding="same"))
-    model.add(BatchNormalization(momentum=0.8))
+    model.add(BatchNormalization(momentum=MOMENTUM))
     model.add(LeakyReLU(alpha=.2))
 
     # model.add(Dropout(0.05))

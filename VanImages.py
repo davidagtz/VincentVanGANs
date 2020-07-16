@@ -12,7 +12,7 @@ from click import confirm
 from shutil import rmtree
 
 
-def download_images(outdir, **kwargs):
+def download_images(outdir, separate=False):
     res = requests.get(
         "https://en.wikipedia.org/wiki/List_of_works_by_Vincent_van_Gogh")
 
@@ -26,7 +26,7 @@ def download_images(outdir, **kwargs):
 
     images = []
     SIZE = 0
-    if kwargs["separate"] != None:
+    if separate:
         for table in eras:
             img_els = table.find_all("img")
             urls = [img.attrs["src"] for img in img_els]
@@ -43,7 +43,7 @@ def download_images(outdir, **kwargs):
         SIZE = len(images)
 
     with progressbar.ProgressBar(max_value=SIZE) as bar:
-        if kwargs["separate"] == None:
+        if separate:
             for i, img in enumerate(images):
                 ext = img[img.rindex('.') + 1:]
                 urllib.request.urlretrieve(
@@ -86,7 +86,7 @@ def resize_images(indir, shape):
             sys.stdout.write(f"\r{ RESIZE_I }")
 
 
-def refresh_dir(dir, shape, **kwargs):
+def refresh_dir(dir, shape, separate=False):
     if dir.strip() == "":
         raise Exception("No directory given")
 
@@ -104,7 +104,7 @@ def refresh_dir(dir, shape, **kwargs):
     mkdir(dir)
 
     print("Downloading images...")
-    download_images(dir, **kwargs)
+    download_images(dir, separate=separate)
 
     print("Resizing images...")
     resize_images(dir, shape)
