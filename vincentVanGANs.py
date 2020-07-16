@@ -24,23 +24,24 @@ def time_string(seconds):
 
 parser = ArgumentParser(
     description="Makes and trains GANs for painting generation")
-parser.add_argument("--refresh", nargs=1, type=int,
+parser.add_argument("--refresh", type=int,
                     help="Redownload images and resize them to parameter")
 parser.add_argument("indirs", nargs="+")
-parser.add_argument("--outdir", nargs=1, default="assets/output")
-parser.add_argument("--epochs", nargs=1, default=50, type=int)
+parser.add_argument("--outdir", default="assets/output")
+parser.add_argument("--epochs", default=50, type=int)
 parser.add_argument("--load", action="store_true",
                     help="Load a model using the outdir")
 parser.add_argument("--p", default=.9, type=int,
                     help="BatchNormalization Momentum")
 parser.add_argument("--optimizer", nargs=2,
                     default=[1e-6, 5e-2], help="alpha and beta for optimizer")
+parser.add_argument("--separate", action="store_true")
 args = parser.parse_args()
 
 # Main Config
 INDIRS = args.indirs
-OUTDIR = args.outdir[0]
-EPOCHS = args.epochs[0]
+OUTDIR = args.outdir
+EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = max(1, TRAINING_SIZE // 32)
@@ -51,12 +52,12 @@ SEED = 100
 INPUT_SHAPE = (128, 128, 3)
 
 if args.refresh != None:
-    shape = (args.refresh[0], args.refresh[0], 3)
+    shape = (args.refresh, args.refresh, 3)
     if shape[0] / 32. % 1 != 0:
         raise Exception("Edges not multiples of 32")
     INPUT_SHAPE = shape
-    for url in INDIRS:
-        refresh_dir(url, (shape[0], shape[1]), separate=True)
+
+    refresh_dir("assets/res", (shape[0], shape[1]), separate=args.separate)
 
 for url in INDIRS:
     IMAGE_URLS += [join(url, file) for file in listdir(url)]
