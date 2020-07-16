@@ -31,10 +31,10 @@ parser.add_argument("--outdir", default="assets/output")
 parser.add_argument("--epochs", default=50, type=int)
 parser.add_argument("--load", action="store_true",
                     help="Load a model using the outdir")
-parser.add_argument("--p", default=.9, type=int,
+parser.add_argument("--p", default=.9, type=float,
                     help="BatchNormalization Momentum")
 parser.add_argument("--optimizer", nargs=2,
-                    default=[1e-6, 5e-2], help="alpha and beta for optimizer")
+                    default=[1e-6, 5e-2], type=float, help="alpha and beta for optimizer")
 parser.add_argument("--separate", action="store_true")
 args = parser.parse_args()
 
