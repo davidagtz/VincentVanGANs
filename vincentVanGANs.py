@@ -5,7 +5,7 @@ import matplotlib.pyplot as plot
 import numpy as np
 from tensorflow import keras, GradientTape
 from os import listdir
-from os.path import join, exists, isfile
+from os.path import join, exists, isfile, isdir
 from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
@@ -85,9 +85,19 @@ dataset = tf.data.Dataset.from_tensor_slices(
 generator = None
 discriminator = None
 if args.load:
-    generator = tf.keras.models.load_model(join(OUTDIR, "generator.model"))
+    models = [x for x in listdir(OUTDIR) if (
+        isdir(join(OUTDIR, x)) and x.endswith(".model"))]
+    models.sort()
+
+    gen_name = [x for x in models if x.startswith("generator")]
+    gen_name = f"generator-{len(gen_name) - 1}.model"
+
+    dis_name = [x for x in models if x.startswith("discriminator")]
+    dis_name = f"discriminator-{len(dis_name) - 1}.model"
+
+    generator = tf.keras.models.load_model(join(OUTDIR, gen_name))
     discriminator = tf.keras.models.load_model(
-        join(OUTDIR, "discriminator.model"))
+        join(OUTDIR, dis_name))
 
     files = listdir(OUTDIR)
     steps = [x for x in files if isfile(join(OUTDIR, x))]
@@ -194,12 +204,8 @@ def train(img_list, epochs):
 
 train(dataset, EPOCHS)
 
-if args.load:
-    i = 0
-    while exists(join(OUTDIR, f"generator-{i}.model")):
-        i += 1
-    generator.save(join(OUTDIR, f"generator-{i}.model"))
-    discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
-else:
-    generator.save(join(OUTDIR, "generator.model"))
-    discriminator.save(join(OUTDIR, "discriminator.model"))
+i = 0
+while exists(join(OUTDIR, f"generator-{i}.model")):
+    i += 1
+generator.save(join(OUTDIR, f"generator-{i}.model"))
+discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
