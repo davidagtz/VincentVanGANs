@@ -40,6 +40,7 @@ parser.add_argument("--separate", action="store_true")
 parser.add_argument("--every", default=None, type=int,
                     help="when to save epoch progress")
 parser.add_argument("--log", action="store_true")
+parser.add_argument("--stop", action="store_true")
 args = parser.parse_args()
 
 # Main Config
@@ -61,6 +62,7 @@ BETA = opt[1] if opt is not None else float(cf.get("beta"))
 MOMENTUM = args.momentum if args.momentum is not None else float(
     cf.get("momentum"))
 EVERY = args.every if args.every is not None else int(cf.get("every"))
+STOP = args.stop
 
 SEED = 100
 # Width * Height * Channels
@@ -177,14 +179,16 @@ def step(img_list):
         # Calculate gradients based off of loss and CNN
         gen_gradients = gen_tape.gradient(
             gen_loss, generator.trainable_variables)
-        dis_gradients = dis_tape.gradient(
-            dis_loss, discriminator.trainable_variables)
+        if not STOP:
+            dis_gradients = dis_tape.gradient(
+                dis_loss, discriminator.trainable_variables)
 
         # Apply gradients
         gen_optimizer.apply_gradients(
             zip(gen_gradients, generator.trainable_variables))
-        dis_optimizer.apply_gradients(
-            zip(dis_gradients, discriminator.trainable_variables))
+        if not STOP:
+            dis_optimizer.apply_gradients(
+                zip(dis_gradients, discriminator.trainable_variables))
 
         return gen_loss, dis_loss
 
@@ -211,7 +215,7 @@ def train(img_list, epochs):
         print(f"Epoch { epoch }, gen loss = { gen_loss }, \
             dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }")
 
-        if (epoch - STARTSTEP) % EVERY == 0 or epoch - STARTSTEP == epochs:
+        if (epoch - STARTSTEP) % EVERY == 0 or epoch - STARTSTEP == epochs - 1:
             save_step(epoch, EX_SEED)
 
     ELAPSED = time.time() - TRAIN_START
