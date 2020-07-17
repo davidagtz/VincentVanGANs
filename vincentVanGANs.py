@@ -32,7 +32,7 @@ parser.add_argument("--outdir", "-o", default="assets/output")
 parser.add_argument("--epochs", "-e", default=50, type=int)
 parser.add_argument("--load", action="store_true",
                     help="Load a model using the outdir")
-parser.add_argument("--p", default=None, type=float,
+parser.add_argument("--momentum", "-p", default=None, type=float,
                     help="BatchNormalization Momentum")
 parser.add_argument("--optimizer", nargs=2, type=float, default=None,
                     help="alpha and beta for optimizer")
@@ -58,7 +58,8 @@ BATCH = max(1, TRAINING_SIZE // 32)
 STARTSTEP = 0
 ALPHA = opt[0] if opt is not None else float(cf.get("alpha"))
 BETA = opt[1] if opt is not None else float(cf.get("beta"))
-MOMENTUM = args.p if args.p is not None else float(cf.get("momentum"))
+MOMENTUM = args.momentum if args.momentum is not None else float(
+    cf.get("momentum"))
 EVERY = args.every if args.every is not None else int(cf.get("every"))
 
 SEED = 100
@@ -68,7 +69,6 @@ INPUT_SHAPE = (128, 128, 3)
 # Print to config
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA, beta=BETA, every=EVERY)
 
-exit()
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
     if shape[0] / 32. % 1 != 0:
