@@ -211,7 +211,7 @@ def train(img_list, epochs):
         print(f"Epoch { epoch }, gen loss = { gen_loss }, \
             dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }")
 
-        if (epoch - STARTSTEP) % EVERY == 0:
+        if (epoch - STARTSTEP) % EVERY == 0 or epoch - STARTSTEP == epochs:
             save_step(epoch, EX_SEED)
 
     ELAPSED = time.time() - TRAIN_START
