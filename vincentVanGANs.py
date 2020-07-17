@@ -4,12 +4,13 @@ import discriminator as dis
 import matplotlib.pyplot as plot
 import numpy as np
 from tensorflow import keras, GradientTape
-from os import listdir
+from os import listdir, mkdir
 from os.path import join, exists, isfile, isdir
 from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
 import time
+from config import config_write, config_read
 
 
 def time_string(seconds):
@@ -27,30 +28,47 @@ parser = ArgumentParser(
 parser.add_argument("--refresh", type=int,
                     help="Redownload images and resize them to parameter")
 parser.add_argument("indirs", nargs="+")
-parser.add_argument("--outdir", default="assets/output")
-parser.add_argument("--epochs", default=50, type=int)
+parser.add_argument("--outdir", "-o", default="assets/output")
+parser.add_argument("--epochs", "-e", default=50, type=int)
 parser.add_argument("--load", action="store_true",
                     help="Load a model using the outdir")
-parser.add_argument("--p", default=.9, type=float,
+parser.add_argument("--p", default=None, type=float,
                     help="BatchNormalization Momentum")
-parser.add_argument("--optimizer", nargs=2,
-                    default=[1e-6, 5e-2], type=float, help="alpha and beta for optimizer")
+parser.add_argument("--optimizer", nargs=2, type=float, default=None,
+                    help="alpha and beta for optimizer")
 parser.add_argument("--separate", action="store_true")
+parser.add_argument("--every", default=None, type=int,
+                    help="when to save epoch progress")
+parser.add_argument("--log", action="store_true")
 args = parser.parse_args()
 
 # Main Config
-INDIRS = args.indirs
 OUTDIR = args.outdir
+if not exists(OUTDIR):
+    mkdir(OUTDIR)
+
+cf = config_read(OUTDIR, momentum=.9, alpha=1e-6, beta=5e-2, every=1)
+opt = args.optimizer
+
+INDIRS = args.indirs
 EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
 BATCH = max(1, TRAINING_SIZE // 32)
 STARTSTEP = 0
+ALPHA = opt[0] if opt is not None else float(cf.get("alpha"))
+BETA = opt[1] if opt is not None else float(cf.get("beta"))
+MOMENTUM = args.p if args.p is not None else float(cf.get("momentum"))
+EVERY = args.every if args.every is not None else int(cf.get("every"))
 
 SEED = 100
 # Width * Height * Channels
 INPUT_SHAPE = (128, 128, 3)
 
+# Print to config
+config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA, beta=BETA, every=EVERY)
+
+exit()
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
     if shape[0] / 32. % 1 != 0:
@@ -68,8 +86,7 @@ for url in IMAGE_URLS:
     image = Image.open(url)
     t = np.asarray(image)
     if t.shape != INPUT_SHAPE:
-        print(t.shape)
-        print(url)
+        print(f"Warning: { url } was skipped")
         continue
     data.append(np.asarray(image))
 
@@ -100,19 +117,17 @@ if args.load:
         join(OUTDIR, dis_name))
 
     files = listdir(OUTDIR)
-    steps = [x for x in files if isfile(join(OUTDIR, x))]
+    steps = [x for x in files if isfile(
+        join(OUTDIR, x)) and x.endswith(".png")]
     STARTSTEP = int(len(steps))
-    print(STARTSTEP)
 else:
     # Make models
-    generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=args.p)
-    discriminator = dis.model(INPUT_SHAPE, MOMENTUM=args.p)
+    generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=MOMENTUM)
+    discriminator = dis.model(INPUT_SHAPE, MOMENTUM=MOMENTUM)
 
 # The optimizers that will adjust the models
-alpha = args.optimizer[0]
-beta = args.optimizer[1]
-gen_optimizer = keras.optimizers.Adam(alpha, beta)
-dis_optimizer = keras.optimizers.Adam(alpha, beta)
+gen_optimizer = keras.optimizers.Adam(ALPHA, BETA)
+dis_optimizer = keras.optimizers.Adam(ALPHA, BETA)
 
 IMAGE_COLS = 4
 IMAGE_ROWS = 2
@@ -196,7 +211,8 @@ def train(img_list, epochs):
         print(f"Epoch { epoch }, gen loss = { gen_loss }, \
             dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }")
 
-        save_step(epoch, EX_SEED)
+        if (epoch - STARTSTEP) % EVERY == 0:
+            save_step(epoch, EX_SEED)
 
     ELAPSED = time.time() - TRAIN_START
     print(f"\nTraining time: {time_string(ELAPSED)}")
