@@ -27,7 +27,7 @@ parser = ArgumentParser(
     description="Makes and trains GANs for painting generation")
 parser.add_argument("--refresh", type=int,
                     help="Redownload images and resize them to parameter")
-parser.add_argument("indirs", nargs="+")
+parser.add_argument("indirs", nargs="*", default=[])
 parser.add_argument("--outdir", "-o", default="assets/output")
 parser.add_argument("--epochs", "-e", default=50, type=int)
 parser.add_argument("--load", action="store_true",
@@ -45,13 +45,19 @@ args = parser.parse_args()
 
 # Main Config
 OUTDIR = args.outdir
+INDIRS = args.indirs
 if not exists(OUTDIR):
     mkdir(OUTDIR)
 
-cf = config_read(OUTDIR, momentum=.9, alpha=1e-6, beta=5e-2, every=1)
+cf = config_read(OUTDIR, momentum=.9, alpha=1e-6,
+                 beta=5e-2, every=1, indirs=INDIRS)
 opt = args.optimizer
 
-INDIRS = args.indirs
+INDIRS = cf["PATHS"]
+
+if len(INDIRS) == 0 and not args.load:
+    raise Exception("No file directories given")
+
 EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
@@ -69,7 +75,9 @@ SEED = 100
 INPUT_SHAPE = (128, 128, 3)
 
 # Print to config
-config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA, beta=BETA, every=EVERY)
+config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
+             beta=BETA, every=EVERY, indirs=INDIRS)
+exit()
 
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
