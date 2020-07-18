@@ -78,6 +78,12 @@ INPUT_SHAPE = (128, 128, 3)
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
              beta=BETA, every=EVERY, indirs=INDIRS)
 
+if not STOP:
+    print("Will train the discriminator...")
+else:
+    print("Will not train the discriminator...")
+
+
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
     if shape[0] / 32. % 1 != 0:
