@@ -276,4 +276,4 @@ discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
 
 if not args.no_log:
     with open(join(OUTDIR, f"session-{i}.log"), "w") as file:
-        file.write(log)
+        file.write(LOG)
