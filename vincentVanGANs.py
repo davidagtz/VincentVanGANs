@@ -102,7 +102,8 @@ log(f"Momentum: {MOMENTUM}", stdout=False)
 log(f"Epochs: {EPOCHS}", stdout=False)
 log(f"Every: {EVERY}", stdout=False)
 log(f"Batch: {BATCH}", stdout=False)
-log(f"Inputs:\n{"\n\t".join(INDIRS)}", stdout=False)
+temp = "\n\t".join(INDIRS)
+log(f'Inputs: {temp}', stdout=False)
 
 
 if args.refresh != None:
