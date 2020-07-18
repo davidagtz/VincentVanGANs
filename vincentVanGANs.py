@@ -12,6 +12,8 @@ from PIL import Image
 import time
 from config import config_write, config_read
 
+tf.get_logger().setLevel("ERROR")
+
 
 def time_string(seconds):
     hours = seconds // 3600
@@ -39,7 +41,7 @@ parser.add_argument("--optimizer", nargs=2, type=float, default=None,
 parser.add_argument("--separate", action="store_true")
 parser.add_argument("--every", default=None, type=int,
                     help="when to save epoch progress")
-parser.add_argument("--log", action="store_true")
+parser.add_argument("--no-log", action="store_true")
 parser.add_argument("--stop", action="store_true")
 args = parser.parse_args()
 
@@ -69,6 +71,17 @@ MOMENTUM = args.momentum if args.momentum is not None else float(
     cf.get("momentum"))
 EVERY = args.every if args.every is not None else int(cf.get("every"))
 STOP = args.stop
+LOG = ""
+
+
+def log(message, stdout=True):
+    global LOG
+    global args
+    if not args.no_log:
+        LOG += message + "\n"
+    if stdout:
+        print(message)
+
 
 SEED = 100
 # Width * Height * Channels
@@ -79,9 +92,17 @@ config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
              beta=BETA, every=EVERY, indirs=INDIRS)
 
 if not STOP:
-    print("Will train the discriminator...")
+    log("Will train the discriminator...")
 else:
-    print("Will not train the discriminator...")
+    log("Will not train the discriminator...")
+
+log(f"Alpha: {ALPHA}", stdout=False)
+log(f"Beta: {BETA}", stdout=False)
+log(f"Momentum: {MOMENTUM}", stdout=False)
+log(f"Epochs: {EPOCHS}", stdout=False)
+log(f"Every: {EVERY}", stdout=False)
+log(f"Batch: {BATCH}", stdout=False)
+log(f"Inputs:\n{"\n\t".join(INDIRS)}", stdout=False)
 
 
 if args.refresh != None:
@@ -144,6 +165,8 @@ else:
     # Make models
     generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=MOMENTUM)
     discriminator = dis.model(INPUT_SHAPE, MOMENTUM=MOMENTUM)
+
+log(f"Starting Epoch: {STARTSTEP}", stdout=False)
 
 # The optimizers that will adjust the models
 gen_optimizer = keras.optimizers.Adam(ALPHA, BETA)
@@ -212,9 +235,6 @@ def step(img_list):
         return gen_loss, dis_loss
 
 
-log = ""
-
-
 def train(img_list, epochs):
     TRAIN_START = time.time()
     EX_SEED = np.random.normal(0, 1, (IMAGE_COLS * IMAGE_ROWS, SEED))
@@ -236,9 +256,7 @@ def train(img_list, epochs):
         EPOCH_ELAPSED = time.time() - EPOCH_START
 
         message = f"Epoch { epoch }, gen loss = { gen_loss }, dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }"
-        print(message)
-        if args.log:
-            log += message
+        log(message)
 
         if (epoch - STARTSTEP) % EVERY == 0 or epoch - STARTSTEP == epochs - 1:
             save_step(epoch, EX_SEED)
@@ -255,6 +273,6 @@ while exists(join(OUTDIR, f"generator-{i}.model")):
 generator.save(join(OUTDIR, f"generator-{i}.model"))
 discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
 
-if args.log:
+if not args.no_log:
     with open(join(OUTDIR, f"session-{i}.log"), "w") as file:
         file.write(log)
