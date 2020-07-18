@@ -46,7 +46,6 @@ args = parser.parse_args()
 # Main Config
 OUTDIR = args.outdir
 INDIRS = args.indirs
-print("INDIRS: ", INDIRS)
 if not exists(OUTDIR):
     mkdir(OUTDIR)
 
@@ -55,7 +54,6 @@ cf = config_read(OUTDIR, momentum=.9, alpha=1e-6,
 opt = args.optimizer
 
 INDIRS = cf["PATHS"]
-print(cf)
 
 if len(INDIRS) == 0 and not args.load:
     raise Exception("No file directories given")
@@ -131,7 +129,12 @@ if args.load:
     files = listdir(OUTDIR)
     steps = [x for x in files if isfile(
         join(OUTDIR, x)) and x.endswith(".png")]
-    STARTSTEP = int(len(steps))
+
+    max_num = 0
+    for img in steps:
+        max_num = max(max_num, int(
+            img[img.index("-") + 1: img.rindex(".")]))
+    STARTSTEP = max_num + 1
 else:
     # Make models
     generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=MOMENTUM)
