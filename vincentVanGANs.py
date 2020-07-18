@@ -197,6 +197,7 @@ def step(img_list):
         # Calculate gradients based off of loss and CNN
         gen_gradients = gen_tape.gradient(
             gen_loss, generator.trainable_variables)
+        dis_gradients = 0
         if not STOP:
             dis_gradients = dis_tape.gradient(
                 dis_loss, discriminator.trainable_variables)
