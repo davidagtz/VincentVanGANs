@@ -77,7 +77,6 @@ INPUT_SHAPE = (128, 128, 3)
 # Print to config
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
              beta=BETA, every=EVERY, indirs=INDIRS)
-exit()
 
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)

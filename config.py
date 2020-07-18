@@ -5,7 +5,6 @@ CONFIG_NAME = "gans.config"
 
 
 def config_write(outdir, indirs=None, **kwargs):
-    print("Wrting config...")
     out = ConfigParser()
 
     out["DEFAULT"] = {}
@@ -17,7 +16,6 @@ def config_write(outdir, indirs=None, **kwargs):
 
     if indirs is not None:
         paths = {}
-        print("HUH ", indirs)
         for i, value in enumerate(indirs):
             paths[str(i)] = value
         out["PATHS"] = paths
@@ -45,7 +43,6 @@ def config_read(indir, indirs=[], **kwargs):
         for key in read["PATHS"]:
             if key not in read["DEFAULT"]:
                 paths.append(read["PATHS"][key])
-        print(paths)
         values["PATHS"] = paths
     else:
         values["PATHS"] = indirs
