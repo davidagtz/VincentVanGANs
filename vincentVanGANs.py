@@ -46,6 +46,7 @@ args = parser.parse_args()
 # Main Config
 OUTDIR = args.outdir
 INDIRS = args.indirs
+print("INDIRS: ", INDIRS)
 if not exists(OUTDIR):
     mkdir(OUTDIR)
 
@@ -54,6 +55,7 @@ cf = config_read(OUTDIR, momentum=.9, alpha=1e-6,
 opt = args.optimizer
 
 INDIRS = cf["PATHS"]
+print(cf)
 
 if len(INDIRS) == 0 and not args.load:
     raise Exception("No file directories given")
@@ -77,6 +79,7 @@ INPUT_SHAPE = (128, 128, 3)
 # Print to config
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
              beta=BETA, every=EVERY, indirs=INDIRS)
+print(INDIRS)
 
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
