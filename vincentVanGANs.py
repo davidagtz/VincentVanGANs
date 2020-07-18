@@ -77,7 +77,6 @@ INPUT_SHAPE = (128, 128, 3)
 # Print to config
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
              beta=BETA, every=EVERY, indirs=INDIRS)
-print(INDIRS)
 
 if args.refresh != None:
     shape = (args.refresh, args.refresh, 3)
@@ -206,6 +205,9 @@ def step(img_list):
         return gen_loss, dis_loss
 
 
+log = ""
+
+
 def train(img_list, epochs):
     TRAIN_START = time.time()
     EX_SEED = np.random.normal(0, 1, (IMAGE_COLS * IMAGE_ROWS, SEED))
@@ -225,8 +227,11 @@ def train(img_list, epochs):
         dis_loss = sum(dis_loss_list) / len(dis_loss_list)
 
         EPOCH_ELAPSED = time.time() - EPOCH_START
-        print(f"Epoch { epoch }, gen loss = { gen_loss }, \
-            dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }")
+
+        message = f"Epoch { epoch }, gen loss = { gen_loss }, dis loss = { dis_loss }, { time_string(EPOCH_ELAPSED) }"
+        print(message)
+        if args.log:
+            log += message
 
         if (epoch - STARTSTEP) % EVERY == 0 or epoch - STARTSTEP == epochs - 1:
             save_step(epoch, EX_SEED)
@@ -242,3 +247,7 @@ while exists(join(OUTDIR, f"generator-{i}.model")):
     i += 1
 generator.save(join(OUTDIR, f"generator-{i}.model"))
 discriminator.save(join(OUTDIR, f"discriminator-{i}.model"))
+
+if args.log:
+    with open(join(OUTDIR, f"session-{i}.log"), "w") as file:
+        file.write(log)
