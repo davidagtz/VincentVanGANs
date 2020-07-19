@@ -7,12 +7,12 @@ parser.add_argument("--inputs", "-I", nargs="+", required=True)
 parser.add_argument("--expr", "-E", required=True)
 parser.add_argument("--start", type=int)
 parser.add_argument("--end", type=int)
-parser.add_argument("every", type=int, nargs="+", help="which ones to save")
+parser.add_argument("every", type=int, help="which ones to save")
 args = parser.parse_args()
 
 
 FOLDERS = args.inputs
-EVERY = args.factors
+EVERY = args.every
 EXPR = args.expr
 FROM = args.start
 TO = args.end
@@ -28,6 +28,7 @@ def matches(x): return x.startswith(first) and x.endswith(last)
 
 for folder in FOLDERS:
     files = [x for x in listdir(folder) if isfile(join(folder, x))]
+    files.sort()
     for file in files:
         if matches(file):
             num = int(get_value(file))
@@ -38,5 +39,5 @@ for folder in FOLDERS:
                 continue
 
             start = FROM if FROM is not None else 0
-            if (num - start) % EVERY == 0:
-                remove(file)
+            if (num - start) % EVERY != 0:
+                remove(join(folder, file))
