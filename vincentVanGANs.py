@@ -43,6 +43,7 @@ parser.add_argument("--every", default=None, type=int,
                     help="when to save epoch progress")
 parser.add_argument("--no-log", action="store_true")
 parser.add_argument("--stop", action="store_true")
+parser.add_argument("--seed-size", type=int)
 args = parser.parse_args()
 
 # Main Config
@@ -51,15 +52,15 @@ INDIRS = args.indirs
 if not exists(OUTDIR):
     mkdir(OUTDIR)
 
+# Read config and set defaults
 cf = config_read(OUTDIR, momentum=.9, alpha=1e-6,
-                 beta=5e-2, every=1, indirs=INDIRS)
+                 beta=5e-2, every=1, indirs=INDIRS, seed_size=100)
 opt = args.optimizer
 
 INDIRS = cf["PATHS"]
-
-if len(INDIRS) == 0 and not args.load:
-    raise Exception("No file directories given")
-
+# Width * Height * Channels
+INPUT_SHAPE = (128, 128, 3)
+SEED = cf.get("seed_size")
 EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
@@ -73,6 +74,13 @@ EVERY = args.every if args.every is not None else int(cf.get("every"))
 STOP = args.stop
 LOG = ""
 
+# Error Checking
+if len(INDIRS) == 0 and not args.load:
+    raise Exception("No file directories given")
+
+if args.seed_size is not None and args.load:
+    raise Exception("Cannot set seed size of saved model")
+
 
 def log(message, stdout=True):
     global LOG
@@ -83,13 +91,9 @@ def log(message, stdout=True):
         print(message)
 
 
-SEED = 100
-# Width * Height * Channels
-INPUT_SHAPE = (128, 128, 3)
-
 # Print to config
 config_write(OUTDIR, momentum=MOMENTUM, alpha=ALPHA,
-             beta=BETA, every=EVERY, indirs=INDIRS)
+             beta=BETA, every=EVERY, indirs=INDIRS, seed_size=SEED)
 
 if not STOP:
     log("Will train the discriminator...")
@@ -104,6 +108,7 @@ log(f"Every: {EVERY}", stdout=False)
 log(f"Batch: {BATCH}", stdout=False)
 temp = "\n\t".join(INDIRS)
 log(f'Inputs: {temp}', stdout=False)
+log(f'Seed Size: {SEED}', stdout=False)
 
 
 if args.refresh != None:
