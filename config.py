@@ -1,6 +1,6 @@
 from configparser import ConfigParser
-from os import listdir
-from os.path import join, isfile, isdir
+from os import listdir, path
+from os.path import join, isfile, join
 
 CONFIG_NAME = "gans.config"
 
@@ -57,9 +57,9 @@ def get_number(exp, folder, isdir=False):
 
     files = []
     if isdir:
-        [x for x in listdir(folder) if isdir(x)]
+        files = [x for x in listdir(folder) if path.isdir(join(folder, x))]
     else:
-        [x for x in listdir(folder) if isfile(x)]
+        files = [x for x in listdir(folder) if path.isfile(join(folder, x))]
 
     FIRST = exp[:exp.index("*")]
     SECOND = exp[exp.rindex("*") + 1:]
