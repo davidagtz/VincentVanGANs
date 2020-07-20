@@ -44,6 +44,7 @@ parser.add_argument("--every", default=None, type=int,
 parser.add_argument("--no-log", action="store_true")
 parser.add_argument("--stop", action="store_true")
 parser.add_argument("--seed-size", type=int)
+parser.add_argument("--stop-gen", type=int)
 args = parser.parse_args()
 
 # Main Config
@@ -224,16 +225,19 @@ def step(img_list):
         dis_loss = dis.loss(real_dis, fake_dis)
 
         # Calculate gradients based off of loss and CNN
-        gen_gradients = gen_tape.gradient(
-            gen_loss, generator.trainable_variables)
+        gen_gradients = 0
+        if not args.stop_gen:
+            gen_gradients = gen_tape.gradient(
+                gen_loss, generator.trainable_variables)
         dis_gradients = 0
         if not STOP:
             dis_gradients = dis_tape.gradient(
                 dis_loss, discriminator.trainable_variables)
 
         # Apply gradients
-        gen_optimizer.apply_gradients(
-            zip(gen_gradients, generator.trainable_variables))
+        if not args.stop_gen:
+            gen_optimizer.apply_gradients(
+                zip(gen_gradients, generator.trainable_variables))
         if not STOP:
             dis_optimizer.apply_gradients(
                 zip(dis_gradients, discriminator.trainable_variables))
