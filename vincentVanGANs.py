@@ -10,7 +10,7 @@ from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
 import time
-from config import config_write, config_read
+from config import config_write, config_read, get_number
 
 tf.get_logger().setLevel("ERROR")
 
@@ -74,6 +74,7 @@ EVERY = args.every if args.every is not None else int(cf.get("every"))
 STOP = args.stop
 GENERATOR_PATH = join(OUTDIR, "generators")
 DISCRIMINATOR_PATH = join(OUTDIR, "discriminators")
+LOG_PATH = join(OUTDIR, "logs")
 LOG = ""
 
 # Error Checking
@@ -146,14 +147,11 @@ dataset = tf.data.Dataset.from_tensor_slices(
 generator = None
 discriminator = None
 if args.load:
-    gen_models = [x for x in listdir(GENERATOR_PATH) if (
-        isdir(join(GENERATOR_PATH, x)) and x.endswith(".model"))]
-    dis_models = [x for x in listdir(DISCRIMINATOR_PATH) if (
-        isdir(join(DISCRIMINATOR_PATH, x)) and x.endswith(".model"))]
-
-    gen_name = f"generator-{len(gen_models) - 1}.model"
-
-    dis_name = f"discriminator-{len(dis_models) - 1}.model"
+    gen_num = get_number("generator-*.model", GENERATOR_PATH, isdir=True)
+    dis_num = get_number("discriminator-*.model",
+                         DISCRIMINATOR_PATH, isdir=True)
+    gen_name = f"generator-{gen_num}.model"
+    dis_name = f"discriminator-{dis_num}.model"
     print(dis_name)
 
     generator = tf.keras.models.load_model(join(GENERATOR_PATH, gen_name))
@@ -270,7 +268,7 @@ def train(img_list, epochs):
             save_step(epoch, EX_SEED)
 
     ELAPSED = time.time() - TRAIN_START
-    print(f"\nTraining time: {time_string(ELAPSED)}")
+    log("\n" + f"Training time: {time_string(ELAPSED)}")
 
 
 train(dataset, EPOCHS)
@@ -279,6 +277,8 @@ if not exists(GENERATOR_PATH):
     mkdir(GENERATOR_PATH)
 if not exists(DISCRIMINATOR_PATH):
     mkdir(DISCRIMINATOR_PATH)
+if not exists(LOG_PATH):
+    mkdir(LOG_PATH)
 
 i = 0
 while exists(join(GENERATOR_PATH, f"generator-{i}.model")):
@@ -287,5 +287,5 @@ generator.save(join(GENERATOR_PATH, f"generator-{i}.model"))
 discriminator.save(join(DISCRIMINATOR_PATH, f"discriminator-{i}.model"))
 
 if not args.no_log:
-    with open(join(OUTDIR, f"session-{i}.log"), "w") as file:
+    with open(join(LOG_PATH, f"session-{i}.log"), "w") as file:
         file.write(LOG)

@@ -22,7 +22,7 @@ if EXPR.index("*") != EXPR.rindex("*"):
 
 first = EXPR[:EXPR.index("*")]
 last = EXPR[EXPR.index("*") + 1:]
-def get_value(x): return x[x.index(first) + len(first): x.rindex(last)]
+def get_value(x): return x[len(first): x.rindex(last)]
 def matches(x): return x.startswith(first) and x.endswith(last)
 
 
