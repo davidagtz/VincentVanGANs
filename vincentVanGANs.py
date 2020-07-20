@@ -60,7 +60,7 @@ opt = args.optimizer
 INDIRS = cf["PATHS"]
 # Width * Height * Channels
 INPUT_SHAPE = (128, 128, 3)
-SEED = cf.get("seed_size")
+SEED = int(cf.get("seed_size"))
 EPOCHS = args.epochs
 IMAGE_URLS = []
 TRAINING_SIZE = len(IMAGE_URLS)
