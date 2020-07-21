@@ -1,3 +1,5 @@
+import time
+import sys
 import tensorflow as tf
 import generator as gen
 import discriminator as dis
@@ -9,7 +11,6 @@ from os.path import join, exists, isfile, isdir
 from VanImages import refresh_dir
 from argparse import ArgumentParser
 from PIL import Image
-import time
 from config import config_write, config_read, get_number
 
 tf.get_logger().setLevel("ERROR")
