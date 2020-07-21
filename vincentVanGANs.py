@@ -45,7 +45,7 @@ parser.add_argument("--every", default=None, type=int,
 parser.add_argument("--no-log", action="store_true")
 parser.add_argument("--stop", action="store_true")
 parser.add_argument("--seed-size", type=int)
-parser.add_argument("--stop-gen", type=int)
+parser.add_argument("--stop-gen", action="store_true")
 args = parser.parse_args()
 
 # Main Config
