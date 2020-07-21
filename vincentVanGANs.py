@@ -238,7 +238,7 @@ def step(img_list):
                 dis_loss, discriminator.trainable_variables)
             dis_optimizer.apply_gradients(
                 zip(dis_gradients, discriminator.trainable_variables))
-            sys.stdout.write("\tOptimizing generator")
+            sys.stdout.write("\tOptimizing discriminator")
         if not STOP or not args.stop_gen:
             sys.stdout.write("\n")
 
