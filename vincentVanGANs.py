@@ -287,9 +287,10 @@ if not exists(LOG_PATH):
     mkdir(LOG_PATH)
 
 
-generator.save(join(GENERATOR_PATH, f"generator-{GEN_NUM}.model"))
-discriminator.save(join(DISCRIMINATOR_PATH, f"discriminator-{DIS_NUM}.model"))
+generator.save(join(GENERATOR_PATH, f"generator-{GEN_NUM + 1}.model"))
+discriminator.save(
+    join(DISCRIMINATOR_PATH, f"discriminator-{DIS_NUM + 1}.model"))
 
 if not args.no_log:
-    with open(join(LOG_PATH, f"session-{ GEN_NUM }.log"), "w") as file:
+    with open(join(LOG_PATH, f"session-{ GEN_NUM  + 1}.log"), "w") as file:
         file.write(LOG)
