@@ -225,22 +225,21 @@ def step(img_list):
         dis_loss = dis.loss(real_dis, fake_dis)
 
         # Calculate gradients based off of loss and CNN
-        gen_gradients = 0
+        # And then apply
         if not args.stop_gen:
             gen_gradients = gen_tape.gradient(
                 gen_loss, generator.trainable_variables)
-        dis_gradients = 0
+            gen_optimizer.apply_gradients(
+                zip(gen_gradients, generator.trainable_variables))
+            sys.stdout.write("Optimizing generator")
         if not STOP:
             dis_gradients = dis_tape.gradient(
                 dis_loss, discriminator.trainable_variables)
-
-        # Apply gradients
-        if not args.stop_gen:
-            gen_optimizer.apply_gradients(
-                zip(gen_gradients, generator.trainable_variables))
-        if not STOP:
             dis_optimizer.apply_gradients(
                 zip(dis_gradients, discriminator.trainable_variables))
+            sys.stdout.write("\tOptimizing generator")
+        if not STOP or not args.stop_gen:
+            sys.stdout.write("\n")
 
         return gen_loss, dis_loss
 
