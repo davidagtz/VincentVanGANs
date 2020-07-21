@@ -1,17 +1,17 @@
-import time
-import sys
-import tensorflow as tf
-import generator as gen
-import discriminator as dis
-import matplotlib.pyplot as plot
-import numpy as np
-from tensorflow import keras, GradientTape
+from models import generator_loss, discriminator_loss
+from models.new_model import generator as gen, discriminator as dis
+from config import config_write, config_read, get_number
 from os import listdir, mkdir
 from os.path import join, exists, isfile, isdir
-from VanImages import refresh_dir
+from tensorflow import keras, GradientTape
 from argparse import ArgumentParser
+from VanImages import refresh_dir
 from PIL import Image
-from config import config_write, config_read, get_number
+import matplotlib.pyplot as plot
+import tensorflow as tf
+import numpy as np
+import time
+import sys
 
 tf.get_logger().setLevel("ERROR")
 
@@ -76,6 +76,8 @@ EVERY = args.every if args.every is not None else int(cf.get("every"))
 STOP = args.stop
 GENERATOR_PATH = join(OUTDIR, "generators")
 DISCRIMINATOR_PATH = join(OUTDIR, "discriminators")
+GEN_NUM = 0
+DIS_NUM = 0
 LOG_PATH = join(OUTDIR, "logs")
 LOG = ""
 
@@ -149,11 +151,11 @@ dataset = tf.data.Dataset.from_tensor_slices(
 generator = None
 discriminator = None
 if args.load:
-    gen_num = get_number("generator-*.model", GENERATOR_PATH, isdir=True)
-    dis_num = get_number("discriminator-*.model",
+    GEN_NUM = get_number("generator-*.model", GENERATOR_PATH, isdir=True)
+    DIS_NUM = get_number("discriminator-*.model",
                          DISCRIMINATOR_PATH, isdir=True)
-    gen_name = f"generator-{gen_num}.model"
-    dis_name = f"discriminator-{dis_num}.model"
+    gen_name = f"generator-{GEN_NUM}.model"
+    dis_name = f"discriminator-{DIS_NUM}.model"
     print(dis_name)
 
     generator = tf.keras.models.load_model(join(GENERATOR_PATH, gen_name))
@@ -171,8 +173,8 @@ if args.load:
     STARTSTEP = max_num + 1
 else:
     # Make models
-    generator = gen.model(INPUT_SHAPE, SEED, MOMENTUM=MOMENTUM)
-    discriminator = dis.model(INPUT_SHAPE, MOMENTUM=MOMENTUM)
+    generator = gen(INPUT_SHAPE, SEED, MOMENTUM=MOMENTUM)
+    discriminator = dis(INPUT_SHAPE, MOMENTUM=MOMENTUM)
 
 log(f"Starting Epoch: {STARTSTEP}", stdout=False)
 
@@ -222,8 +224,8 @@ def step(img_list):
         fake_dis = discriminator(fake_imgs, training=True)
 
         # Measure losses
-        gen_loss = gen.loss(fake_dis)
-        dis_loss = dis.loss(real_dis, fake_dis)
+        gen_loss = generator_loss(fake_dis)
+        dis_loss = discriminator_loss(real_dis, fake_dis)
 
         # Calculate gradients based off of loss and CNN
         # And then apply
@@ -284,12 +286,10 @@ if not exists(DISCRIMINATOR_PATH):
 if not exists(LOG_PATH):
     mkdir(LOG_PATH)
 
-i = 0
-while exists(join(GENERATOR_PATH, f"generator-{i}.model")):
-    i += 1
-generator.save(join(GENERATOR_PATH, f"generator-{i}.model"))
-discriminator.save(join(DISCRIMINATOR_PATH, f"discriminator-{i}.model"))
+
+generator.save(join(GENERATOR_PATH, f"generator-{GEN_NUM}.model"))
+discriminator.save(join(DISCRIMINATOR_PATH, f"discriminator-{DIS_NUM}.model"))
 
 if not args.no_log:
-    with open(join(LOG_PATH, f"session-{i}.log"), "w") as file:
+    with open(join(LOG_PATH, f"session-{ GEN_NUM }.log"), "w") as file:
         file.write(LOG)
