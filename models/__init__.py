@@ -1,7 +1,7 @@
 from tensorflow import ones_like, zeros_like
 from tensorflow.keras.losses import BinaryCrossentropy
 
-__all__ = ["default", "new_model"]
+__all__ = ["default", "new_model", "big_model"]
 
 cross_entropy = BinaryCrossentropy(from_logits=True)
 

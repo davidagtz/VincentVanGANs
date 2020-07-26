@@ -1,5 +1,5 @@
 from models import generator_loss, discriminator_loss
-from models.new_model import generator as gen, discriminator as dis
+from models.big_model import generator as gen, discriminator as dis
 from config import config_write, config_read, get_number
 from os import listdir, mkdir
 from os.path import join, exists, isfile, isdir
